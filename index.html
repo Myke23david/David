@@ -193,17 +193,6 @@
       font-size: 16px;
     }
 
-    .planilha-info {
-      background: #e8f5e9;
-      padding: 10px;
-      border-radius: 10px;
-      margin-top: 10px;
-      font-size: 13px;
-      color: #2e7d32;
-      text-align: center;
-      display: none;
-    }
-
     @media (max-width: 500px) {
       h1 { font-size: 1.8em; }
       .pandas { font-size: 40px; }
@@ -254,28 +243,55 @@
     💙 Com muito amor, família David 💙
   </p>
 
-  <div id="planilhaStatus" class="planilha-info">
-    ✅ Dados salvos na planilha!
-  </div>
-
   <script>
     // =============================================
-    // 🔥 CONFIGURAÇÃO DA PLANILHA
-    // COLOQUE AQUI O ID DA SUA PLANILHA
+    // 🔥 SUA URL DO APPScript
     // =============================================
-    const ID_PLANILHA = const ID_PLANILHA = "2PACX-1vSqyZCHZYhxr6L_WTiu-tbTM5mQrM8dEwmj8scJVTy05zQdh3i9l9Yfax_EljZTg8h0tOUG5fJ-86Bl";
+    const URL_API = "https://script.google.com/macros/s/AKfycbwJ5RPRyCXbUpZ-rgq97K_gdIh65_y4JFHylAIW1XErW9pI5iKUnhyYnSW6M-MZ8X8a3g/exec";
     // =============================================
-
-    // URL para buscar dados da planilha (pública)
-    function getUrl(aba) {
-      return `https://docs.google.com/spreadsheets/d/${ID_PLANILHA}/gviz/tq?tqx=out:json&sheet=${aba}`;
-    }
-
-    // URL para enviar dados (usando um serviço gratuito)
-    const API_URL = "https://api.sheety.co/SEU_ID/convite-david";
 
     let nomeAtual = "";
     let presenteEscolhido = "";
+
+    // =============================================
+    // FUNÇÃO: Buscar dados da planilha
+    // =============================================
+    async function buscarDados(aba) {
+      try {
+        const response = await fetch(`${URL_API}?aba=${aba}`);
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status}`);
+        }
+        return await response.json();
+      } catch (erro) {
+        console.error(`Erro ao buscar ${aba}:`, erro);
+        throw erro;
+      }
+    }
+
+    // =============================================
+    // FUNÇÃO: Salvar dados na planilha
+    // =============================================
+    async function salvarDados(aba, dados) {
+      try {
+        const response = await fetch(`${URL_API}?aba=${aba}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(dados)
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status}`);
+        }
+        
+        return await response.json();
+      } catch (erro) {
+        console.error(`Erro ao salvar em ${aba}:`, erro);
+        throw erro;
+      }
+    }
 
     // =============================================
     // FUNÇÃO 1: Confirmar presença
@@ -295,26 +311,29 @@
         msg.innerHTML = '⏳ Verificando...';
 
         // Busca os convidados da planilha
-        const url = getUrl('convidados');
-        const response = await fetch(url);
-        const text = await response.text();
-        const json = JSON.parse(text.substring(47, text.length - 2));
+        const convidados = await buscarDados('convidados');
         
-        const convidados = json.table.rows.map(row => ({
-          nome: row.c[0]?.v || '',
-          confirmado: row.c[1]?.v || '',
-          presente: row.c[2]?.v || ''
-        }));
-
         // Verifica se o nome já existe
-        const existe = convidados.find(c => c.nome.toLowerCase() === nome.toLowerCase());
+        const existe = convidados.find(c => c.Nome && c.Nome.toLowerCase() === nome.toLowerCase());
 
-        // Aqui você precisa de um serviço para salvar na planilha
-        // Como o Google Sheets não permite escrever diretamente,
-        // você pode usar um serviço como Sheety ou AppScript
-
-        // POR ENQUANTO, vamos simular o salvamento
-        // e mostrar uma mensagem
+        if (!existe) {
+          // Se não existe, adiciona
+          await salvarDados('convidados', {
+            Nome: nome,
+            Confirmado: 'SIM',
+            PresenteEscolhido: ''
+          });
+        } else {
+          // Se existe, atualiza
+          await salvarDados('convidados', {
+            Nome: nome,
+            Confirmado: 'SIM',
+            PresenteEscolhido: existe.PresenteEscolhido || ''
+          });
+          if (existe.PresenteEscolhido) {
+            presenteEscolhido = existe.PresenteEscolhido;
+          }
+        }
 
         nomeAtual = nome;
         msg.className = 'mensagem sucesso';
@@ -323,16 +342,9 @@
         // Recarrega a lista
         carregarPresentes();
 
-        document.getElementById('planilhaStatus').style.display = 'block';
-        document.getElementById('planilhaStatus').innerHTML = 
-          `📝 ${nome} foi adicionado à lista de convidados!<br>
-          <span style="font-size: 12px; color: #666;">
-            (Para salvar automaticamente na planilha, configure o Sheety - veja instruções abaixo)
-          </span>`;
-
       } catch (erro) {
         msg.className = 'mensagem erro';
-        msg.innerHTML = '❌ Erro: ' + erro.message;
+        msg.innerHTML = '❌ Erro ao confirmar: ' + erro.message;
         console.error('Erro ao confirmar:', erro);
       }
     }
@@ -348,20 +360,10 @@
 
       try {
         // Busca os presentes da planilha
-        const url = getUrl('presentes');
-        const response = await fetch(url);
-        const text = await response.text();
-        const json = JSON.parse(text.substring(47, text.length - 2));
+        const presentes = await buscarDados('presentes');
         
-        const presentes = json.table.rows.map(row => ({
-          nome: row.c[0]?.v || '',
-          descricao: row.c[1]?.v || '',
-          disponivel: row.c[2]?.v || 'SIM',
-          escolhidoPor: row.c[3]?.v || ''
-        }));
-
         // Filtra os disponíveis
-        const disponiveis = presentes.filter(p => p.disponivel === 'SIM' || p.disponivel === true);
+        const disponiveis = presentes.filter(p => p.Disponível === 'SIM' || p.Disponível === true);
 
         const total = disponiveis.length;
 
@@ -374,51 +376,31 @@
         contador.innerHTML = `📦 ${total} presente(s) disponível(is) 🐼`;
 
         div.innerHTML = '';
-        disponiveis.forEach((presente, index) => {
+        disponiveis.forEach((presente) => {
           const item = document.createElement('div');
           item.className = 'presente';
           item.innerHTML = `
             <div>
-              <strong style="color: #0d47a1; font-size: 18px;">🎁 ${presente.nome}</strong>
+              <strong style="color: #0d47a1; font-size: 18px;">🎁 ${presente.Nome}</strong>
               <br>
-              <span style="font-size: 14px; color: #1565c0;">${presente.descricao || ''}</span>
+              <span style="font-size: 14px; color: #1565c0;">${presente.Descrição || ''}</span>
             </div>
-            <button onclick="escolherPresente('${index}', '${presente.nome}')">🎁 Escolher</button>
+            <button onclick="escolherPresente('${presente.Nome}')">🎁 Escolher</button>
           `;
           div.appendChild(item);
         });
 
       } catch (erro) {
-        div.innerHTML = '❌ Erro ao carregar presentes. Verifique se a planilha foi publicada corretamente.';
+        div.innerHTML = '❌ Erro ao carregar presentes: ' + erro.message;
+        contador.innerHTML = '';
         console.error('Erro ao carregar presentes:', erro);
-        
-        // Mostra um exemplo para teste
-        div.innerHTML = `
-          <p style="color: #666;">📝 Configuração da planilha necessária:</p>
-          <ol style="text-align: left; color: #555; font-size: 14px;">
-            <li>Crie uma planilha no Google Sheets</li>
-            <li>Adicione a aba "presentes" com colunas: Nome, Descrição, Disponível, EscolhidoPor</li>
-            <li>Adicione a aba "convidados" com colunas: Nome, Confirmado, PresenteEscolhido</li>
-            <li>Publique a planilha (Arquivo → Publicar na web)</li>
-            <li>Copie o ID da planilha e cole no código</li>
-          </ol>
-          <p style="color: #0d47a1; font-weight: bold;">Exemplo de teste:</p>
-          <div class="presente">
-            <div><strong>🎁 Fralda P</strong><br><span style="font-size:14px;color:#1565c0;">Pacote com 100</span></div>
-            <button onclick="alert('Configure a planilha para funcionar!')">🎁 Escolher</button>
-          </div>
-          <div class="presente">
-            <div><strong>🎁 Kit Banho</strong><br><span style="font-size:14px;color:#1565c0;">Shampoo e sabonete</span></div>
-            <button onclick="alert('Configure a planilha para funcionar!')">🎁 Escolher</button>
-          </div>
-        `;
       }
     }
 
     // =============================================
-    // FUNÇÃO 3: Escolher um presente (versão simplificada)
+    // FUNÇÃO 3: Escolher um presente
     // =============================================
-    function escolherPresente(index, nomePresente) {
+    async function escolherPresente(nomePresente) {
       const msg = document.getElementById('msgConfirmacao');
 
       if (!nomeAtual) {
@@ -435,20 +417,37 @@
 
       if (!confirm(`🎁 Você quer escolher "${nomePresente}"? 🐼`)) return;
 
-      // Simula a escolha
-      presenteEscolhido = nomePresente;
-      msg.className = 'mensagem sucesso';
-      msg.innerHTML = `✅ Você escolheu "${nomePresente}"! Muito obrigado! 🎉🐼❤️`;
-      
-      // Recarrega a lista
-      carregarPresentes();
+      try {
+        msg.className = 'mensagem';
+        msg.innerHTML = '⏳ Salvando...';
 
-      document.getElementById('planilhaStatus').style.display = 'block';
-      document.getElementById('planilhaStatus').innerHTML = 
-        `📝 ${nomeAtual} escolheu: ${nomePresente}!<br>
-        <span style="font-size: 12px; color: #666;">
-          (Para salvar automaticamente na planilha, configure o Sheety)
-        </span>`;
+        // 1 - Marca o presente como INDISPONÍVEL
+        await salvarDados('presentes', {
+          Nome: nomePresente,
+          Disponível: 'NÃO',
+          EscolhidoPor: nomeAtual
+        });
+
+        // 2 - Salva no convidado qual presente ele escolheu
+        await salvarDados('convidados', {
+          Nome: nomeAtual,
+          Confirmado: 'SIM',
+          PresenteEscolhido: nomePresente
+        });
+
+        presenteEscolhido = nomePresente;
+
+        msg.className = 'mensagem sucesso';
+        msg.innerHTML = `✅ Você escolheu "${nomePresente}"! Muito obrigado! 🎉🐼❤️`;
+        
+        // Recarrega a lista (o presente some)
+        carregarPresentes();
+
+      } catch (erro) {
+        msg.className = 'mensagem erro';
+        msg.innerHTML = '❌ Erro ao escolher presente: ' + erro.message;
+        console.error('Erro ao escolher presente:', erro);
+      }
     }
 
     // =============================================
@@ -456,6 +455,7 @@
     // =============================================
     window.onload = function() {
       console.log("🚀 Site carregado!");
+      console.log("🔗 URL da API:", URL_API);
       carregarPresentes();
     };
   </script>
