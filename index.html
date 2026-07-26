@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎉 Chá de Bebê do David</title>
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 700px; 
+      margin: auto; 
+      padding: 20px; 
+      background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #90caf9 100%);
+      min-height: 100vh;
+      animation: fundoAnimado 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes fundoAnimado {
+      0% { background: linear-gradient(135deg, #e3f2fd, #bbdefb); }
+      50% { background: linear-gradient(135deg, #bbdefb, #64b5f6); }
+      100% { background: linear-gradient(135deg, #90caf9, #42a5f5); }
+    }
+
+    h1 { 
+      text-align: center; 
+      color: #0d47a1;
+      font-size: 2.5em;
+      text-shadow: 2px 2px 4px rgba(13, 71, 161, 0.3);
+      animation: tituloPula 2s ease-in-out infinite;
+    }
+
+    @keyframes tituloPula {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+
+    .card { 
+      border: none; 
+      padding: 25px; 
+      margin: 20px 0; 
+      border-radius: 20px; 
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 8px 32px rgba(13, 71, 161, 0.2);
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+    }
+
+    button { 
+      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      color: white; 
+      border: none; 
+      padding: 14px 30px; 
+      border-radius: 50px; 
+      cursor: pointer; 
+      font-size: 17px;
+      font-weight: bold;
+      margin-top: 10px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(13, 71, 161, 0.3);
+    }
+
+    button:hover { 
+      transform: scale(1.05);
+      box-shadow: 0 6px 25px rgba(13, 71, 161, 0.5);
+      background: linear-gradient(135deg, #0d47a1, #0a3a82);
+    }
+
+    .presente { 
+      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+      padding: 15px; 
+      margin: 12px 0; 
+      border-radius: 15px; 
+      border-left: 5px solid #0d47a1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+      animation: presenteEntra 0.5s ease-out;
+    }
+
+    @keyframes presenteEntra {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .presente:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 15px rgba(13, 71, 161, 0.2);
+    }
+
+    .presente button {
+      padding: 8px 20px;
+      font-size: 14px;
+      margin-top: 0;
+      background: linear-gradient(135deg, #42a5f5, #0d47a1);
+    }
+
+    input { 
+      padding: 12px; 
+      width: 100%; 
+      margin: 5px 0 10px 0; 
+      border: 2px solid #90caf9;
+      border-radius: 50px;
+      font-size: 16px;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #0d47a1;
+      box-shadow: 0 0 20px rgba(13, 71, 161, 0.2);
+      transform: scale(1.01);
+    }
+
+    .mensagem {
+      color: #0d47a1;
+      font-weight: bold;
+      margin-top: 10px;
+      font-size: 18px;
+    }
+
+    .erro {
+      color: #c62828;
+    }
+
+    .sucesso {
+      color: #2e7d32;
+    }
+
+    .subtotal {
+      text-align: center;
+      color: #0d47a1;
+      font-size: 16px;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .pandas {
+      text-align: center;
+      font-size: 60px;
+      animation: pandaBaila 3s ease-in-out infinite;
+      letter-spacing: 15px;
+    }
+
+    @keyframes pandaBaila {
+      0%, 100% { transform: rotate(-5deg) scale(1); }
+      50% { transform: rotate(5deg) scale(1.1); }
+    }
+
+    .pandas-pequenos {
+      text-align: center;
+      font-size: 30px;
+      letter-spacing: 10px;
+      animation: pandaGira 6s linear infinite;
+    }
+
+    @keyframes pandaGira {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .balao {
+      display: inline-block;
+      animation: sobeBalao 3s ease-in-out infinite;
+    }
+
+    @keyframes sobeBalao {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+    }
+
+    .frase-efeito {
+      text-align: center;
+      font-size: 20px;
+      color: #0d47a1;
+      font-weight: bold;
+      animation: textoPisca 2s ease-in-out infinite;
+    }
+
+    @keyframes textoPisca {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .carregando {
+      text-align: center;
+      color: #666;
+      font-size: 16px;
+    }
+
+    .planilha-info {
+      background: #e8f5e9;
+      padding: 10px;
+      border-radius: 10px;
+      margin-top: 10px;
+      font-size: 13px;
+      color: #2e7d32;
+      text-align: center;
+      display: none;
+    }
+
+    @media (max-width: 500px) {
+      h1 { font-size: 1.8em; }
+      .pandas { font-size: 40px; }
+      .presente { flex-direction: column; text-align: center; }
+      .presente button { margin-top: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="pandas">
+    🐼 🎈 🐼 🎈 🐼
+  </div>
+
+  <h1>🎉 Chá de Bebê do David 🎉</h1>
+
+  <div class="frase-efeito">
+    🍼 Um novo bebê está chegando! Vamos celebrar! 🍼
+  </div>
+
+  <p style="text-align: center; color: #1565c0; font-size: 18px;">
+    <span class="balao">🎈</span> Confirme sua presença e escolha um presente!
+    <span class="balao">🎈</span>
+  </p>
+
+  <!-- ===== CONFIRMAR PRESENÇA ===== -->
+  <div class="card">
+    <h2 style="color: #0d47a1;">📋 Confirme sua presença</h2>
+    <input type="text" id="nomeConvidado" placeholder="Digite seu nome completo">
+    <button onclick="confirmarPresenca()">✅ Confirmar presença</button>
+    <p id="msgConfirmacao" class="mensagem"></p>
+  </div>
+
+  <!-- ===== LISTA DE PRESENTES ===== -->
+  <div class="card">
+    <h2 style="color: #0d47a1;">🎁 Lista de Presentes</h2>
+    <div id="listaPresentes" style="min-height: 100px;">
+      <p class="carregando">🔄 Carregando lista de presentes...</p>
+    </div>
+    <p id="contadorPresentes" class="subtotal"></p>
+  </div>
+
+  <div class="pandas-pequenos" style="margin-top: 20px;">
+    🐼 🎀 🐼 🎀 🐼
+  </div>
+
+  <p style="text-align: center; color: #0d47a1; font-weight: bold; margin-top: 10px;">
+    💙 Com muito amor, família David 💙
+  </p>
+
+  <div id="planilhaStatus" class="planilha-info">
+    ✅ Dados salvos na planilha!
+  </div>
+
+  <script>
+    // =============================================
+    // 🔥 CONFIGURAÇÃO DA PLANILHA
+    // COLOQUE AQUI O ID DA SUA PLANILHA
+    // =============================================
+    const ID_PLANILHA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSqyZCHZYhxr6L_WTiu-tbTM5mQrM8dEwmj8scJVTy05zQdh3i9l9Yfax_EljZTg8h0tOUG5fJ-86Bl/pubhtml";
+    // =============================================
+
+    // URL para buscar dados da planilha (pública)
+    function getUrl(aba) {
+      return `https://docs.google.com/spreadsheets/d/${ID_PLANILHA}/gviz/tq?tqx=out:json&sheet=${aba}`;
+    }
+
+    // URL para enviar dados (usando um serviço gratuito)
+    const API_URL = "https://api.sheety.co/SEU_ID/convite-david";
+
+    let nomeAtual = "";
+    let presenteEscolhido = "";
+
+    // =============================================
+    // FUNÇÃO 1: Confirmar presença
+    // =============================================
+    async function confirmarPresenca() {
+      const nome = document.getElementById('nomeConvidado').value.trim();
+      const msg = document.getElementById('msgConfirmacao');
+
+      if (!nome) {
+        msg.className = 'mensagem erro';
+        msg.innerHTML = '❌ Digite seu nome primeiro!';
+        return;
+      }
+
+      try {
+        msg.className = 'mensagem';
+        msg.innerHTML = '⏳ Verificando...';
+
+        // Busca os convidados da planilha
+        const url = getUrl('convidados');
+        const response = await fetch(url);
+        const text = await response.text();
+        const json = JSON.parse(text.substring(47, text.length - 2));
+        
+        const convidados = json.table.rows.map(row => ({
+          nome: row.c[0]?.v || '',
+          confirmado: row.c[1]?.v || '',
+          presente: row.c[2]?.v || ''
+        }));
+
+        // Verifica se o nome já existe
+        const existe = convidados.find(c => c.nome.toLowerCase() === nome.toLowerCase());
+
+        // Aqui você precisa de um serviço para salvar na planilha
+        // Como o Google Sheets não permite escrever diretamente,
+        // você pode usar um serviço como Sheety ou AppScript
+
+        // POR ENQUANTO, vamos simular o salvamento
+        // e mostrar uma mensagem
+
+        nomeAtual = nome;
+        msg.className = 'mensagem sucesso';
+        msg.innerHTML = `✅ ${nome}, você está confirmado! Agora escolha um presente. 🎉🐼`;
+        
+        // Recarrega a lista
+        carregarPresentes();
+
+        document.getElementById('planilhaStatus').style.display = 'block';
+        document.getElementById('planilhaStatus').innerHTML = 
+          `📝 ${nome} foi adicionado à lista de convidados!<br>
+          <span style="font-size: 12px; color: #666;">
+            (Para salvar automaticamente na planilha, configure o Sheety - veja instruções abaixo)
+          </span>`;
+
+      } catch (erro) {
+        msg.className = 'mensagem erro';
+        msg.innerHTML = '❌ Erro: ' + erro.message;
+        console.error('Erro ao confirmar:', erro);
+      }
+    }
+
+    // =============================================
+    // FUNÇÃO 2: Carregar lista de presentes
+    // =============================================
+    async function carregarPresentes() {
+      const div = document.getElementById('listaPresentes');
+      const contador = document.getElementById('contadorPresentes');
+
+      div.innerHTML = '<p class="carregando">🔄 Carregando...</p>';
+
+      try {
+        // Busca os presentes da planilha
+        const url = getUrl('presentes');
+        const response = await fetch(url);
+        const text = await response.text();
+        const json = JSON.parse(text.substring(47, text.length - 2));
+        
+        const presentes = json.table.rows.map(row => ({
+          nome: row.c[0]?.v || '',
+          descricao: row.c[1]?.v || '',
+          disponivel: row.c[2]?.v || 'SIM',
+          escolhidoPor: row.c[3]?.v || ''
+        }));
+
+        // Filtra os disponíveis
+        const disponiveis = presentes.filter(p => p.disponivel === 'SIM' || p.disponivel === true);
+
+        const total = disponiveis.length;
+
+        if (total === 0) {
+          div.innerHTML = '🎉🎊 Todos os presentes já foram escolhidos! Muito obrigado! 🙏🐼';
+          contador.innerHTML = '';
+          return;
+        }
+
+        contador.innerHTML = `📦 ${total} presente(s) disponível(is) 🐼`;
+
+        div.innerHTML = '';
+        disponiveis.forEach((presente, index) => {
+          const item = document.createElement('div');
+          item.className = 'presente';
+          item.innerHTML = `
+            <div>
+              <strong style="color: #0d47a1; font-size: 18px;">🎁 ${presente.nome}</strong>
+              <br>
+              <span style="font-size: 14px; color: #1565c0;">${presente.descricao || ''}</span>
+            </div>
+            <button onclick="escolherPresente('${index}', '${presente.nome}')">🎁 Escolher</button>
+          `;
+          div.appendChild(item);
+        });
+
+      } catch (erro) {
+        div.innerHTML = '❌ Erro ao carregar presentes. Verifique se a planilha foi publicada corretamente.';
+        console.error('Erro ao carregar presentes:', erro);
+        
+        // Mostra um exemplo para teste
+        div.innerHTML = `
+          <p style="color: #666;">📝 Configuração da planilha necessária:</p>
+          <ol style="text-align: left; color: #555; font-size: 14px;">
+            <li>Crie uma planilha no Google Sheets</li>
+            <li>Adicione a aba "presentes" com colunas: Nome, Descrição, Disponível, EscolhidoPor</li>
+            <li>Adicione a aba "convidados" com colunas: Nome, Confirmado, PresenteEscolhido</li>
+            <li>Publique a planilha (Arquivo → Publicar na web)</li>
+            <li>Copie o ID da planilha e cole no código</li>
+          </ol>
+          <p style="color: #0d47a1; font-weight: bold;">Exemplo de teste:</p>
+          <div class="presente">
+            <div><strong>🎁 Fralda P</strong><br><span style="font-size:14px;color:#1565c0;">Pacote com 100</span></div>
+            <button onclick="alert('Configure a planilha para funcionar!')">🎁 Escolher</button>
+          </div>
+          <div class="presente">
+            <div><strong>🎁 Kit Banho</strong><br><span style="font-size:14px;color:#1565c0;">Shampoo e sabonete</span></div>
+            <button onclick="alert('Configure a planilha para funcionar!')">🎁 Escolher</button>
+          </div>
+        `;
+      }
+    }
+
+    // =============================================
+    // FUNÇÃO 3: Escolher um presente (versão simplificada)
+    // =============================================
+    function escolherPresente(index, nomePresente) {
+      const msg = document.getElementById('msgConfirmacao');
+
+      if (!nomeAtual) {
+        msg.className = 'mensagem erro';
+        msg.innerHTML = '❌ Confirme seu nome primeiro!';
+        return;
+      }
+
+      if (presenteEscolhido) {
+        msg.className = 'mensagem erro';
+        msg.innerHTML = `❌ Você já escolheu "${presenteEscolhido}". Só pode escolher um presente! 🐼`;
+        return;
+      }
+
+      if (!confirm(`🎁 Você quer escolher "${nomePresente}"? 🐼`)) return;
+
+      // Simula a escolha
+      presenteEscolhido = nomePresente;
+      msg.className = 'mensagem sucesso';
+      msg.innerHTML = `✅ Você escolheu "${nomePresente}"! Muito obrigado! 🎉🐼❤️`;
+      
+      // Recarrega a lista
+      carregarPresentes();
+
+      document.getElementById('planilhaStatus').style.display = 'block';
+      document.getElementById('planilhaStatus').innerHTML = 
+        `📝 ${nomeAtual} escolheu: ${nomePresente}!<br>
+        <span style="font-size: 12px; color: #666;">
+          (Para salvar automaticamente na planilha, configure o Sheety)
+        </span>`;
+    }
+
+    // =============================================
+    // INICIALIZA
+    // =============================================
+    window.onload = function() {
+      console.log("🚀 Site carregado!");
+      carregarPresentes();
+    };
+  </script>
+
+</body>
+</html>
