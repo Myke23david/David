@@ -245,26 +245,48 @@
 
   <script>
     // =============================================
-    // 🔥 SUA URL DO APPScript
+    // 🔥 SUA URL DO APPScript (ATUALIZADA)
     // =============================================
-  const URL_API = "https://script.google.com/macros/s/AKfycbyUu_inpnt1cOoherjSegaeOHhbNkeuXIlgwq8e44_fHrag5rkGffBhLV1elyfFWIIxdQ/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbxp1LSSJwZCeOh4QkoeWdkTuXL3lEWf5FPN_npf86lwW0pwOAnrJsfllcYbfYrb744g/exec";
     // =============================================
 
     let nomeAtual = "";
     let presenteEscolhido = "";
 
     // =============================================
-    // FUNÇÃO: Buscar dados da planilha
+    // FUNÇÃO: Buscar dados da planilha (com verificação)
     // =============================================
     async function buscarDados(aba) {
       try {
+        console.log(`🔍 Buscando dados da aba: ${aba}`);
         const response = await fetch(`${URL_API}?aba=${aba}`);
+        
         if (!response.ok) {
           throw new Error(`Erro HTTP: ${response.status}`);
         }
-        return await response.json();
+        
+        const dados = await response.json();
+        console.log(`📦 Dados recebidos de ${aba}:`, dados);
+        
+        // Verifica se os dados são um array
+        if (Array.isArray(dados)) {
+          return dados;
+        } else if (dados && typeof dados === 'object') {
+          // Se for um objeto, tenta extrair o array
+          if (dados.dados && Array.isArray(dados.dados)) {
+            return dados.dados;
+          }
+          // Se tiver erro, lança
+          if (dados.erro) {
+            throw new Error(dados.erro);
+          }
+          // Se for um objeto com valores, converte para array
+          return [dados];
+        }
+        
+        return [];
       } catch (erro) {
-        console.error(`Erro ao buscar ${aba}:`, erro);
+        console.error(`❌ Erro ao buscar ${aba}:`, erro);
         throw erro;
       }
     }
@@ -274,6 +296,7 @@
     // =============================================
     async function salvarDados(aba, dados) {
       try {
+        console.log(`💾 Salvando em ${aba}:`, dados);
         const response = await fetch(`${URL_API}?aba=${aba}`, {
           method: 'POST',
           headers: {
@@ -286,9 +309,11 @@
           throw new Error(`Erro HTTP: ${response.status}`);
         }
         
-        return await response.json();
+        const resultado = await response.json();
+        console.log(`✅ Salvo em ${aba}:`, resultado);
+        return resultado;
       } catch (erro) {
-        console.error(`Erro ao salvar em ${aba}:`, erro);
+        console.error(`❌ Erro ao salvar em ${aba}:`, erro);
         throw erro;
       }
     }
@@ -313,8 +338,10 @@
         // Busca os convidados da planilha
         const convidados = await buscarDados('convidados');
         
-        // Verifica se o nome já existe
-        const existe = convidados.find(c => c.Nome && c.Nome.toLowerCase() === nome.toLowerCase());
+        // Verifica se o nome já existe (com segurança)
+        const existe = Array.isArray(convidados) ? 
+          convidados.find(c => c.Nome && c.Nome.toLowerCase() === nome.toLowerCase()) :
+          null;
 
         if (!existe) {
           // Se não existe, adiciona
@@ -362,8 +389,19 @@
         // Busca os presentes da planilha
         const presentes = await buscarDados('presentes');
         
-        // Filtra os disponíveis
-        const disponiveis = presentes.filter(p => p.Disponível === 'SIM' || p.Disponível === true);
+        if (!Array.isArray(presentes) || presentes.length === 0) {
+          div.innerHTML = '❌ Nenhum presente encontrado. Verifique a planilha!';
+          contador.innerHTML = '';
+          return;
+        }
+
+        console.log('📋 Presentes carregados:', presentes);
+
+        // Filtra os disponíveis (campo "Disponível" = "SIM")
+        const disponiveis = presentes.filter(p => {
+          const disp = p.Disponível || p.disponivel || p.disponível || '';
+          return disp === 'SIM' || disp === 'sim' || disp === true;
+        });
 
         const total = disponiveis.length;
 
@@ -377,15 +415,18 @@
 
         div.innerHTML = '';
         disponiveis.forEach((presente) => {
+          const nome = presente.Nome || presente.nome || 'Presente';
+          const descricao = presente.Descrição || presente.descricao || '';
+          
           const item = document.createElement('div');
           item.className = 'presente';
           item.innerHTML = `
             <div>
-              <strong style="color: #0d47a1; font-size: 18px;">🎁 ${presente.Nome}</strong>
+              <strong style="color: #0d47a1; font-size: 18px;">🎁 ${nome}</strong>
               <br>
-              <span style="font-size: 14px; color: #1565c0;">${presente.Descrição || ''}</span>
+              <span style="font-size: 14px; color: #1565c0;">${descricao}</span>
             </div>
-            <button onclick="escolherPresente('${presente.Nome}')">🎁 Escolher</button>
+            <button onclick="escolherPresente('${nome.replace(/'/g, "\\'")}')">🎁 Escolher</button>
           `;
           div.appendChild(item);
         });
